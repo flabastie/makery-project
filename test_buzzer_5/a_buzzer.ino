@@ -7,13 +7,21 @@
 const int pin_buzzer = 5;
 
 // notes in the melody:
-int melody[] = {
+/*int melody[] = {
   NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
+};*/
+
+int melody[] = {
+  NOTE_F3, NOTE_A3, NOTE_F1, NOTE_A3, NOTE_F3, NOTE_A3, NOTE_F3, NOTE_D4
 };
 
 // note durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = {
+/*int noteDurations[] = {
   4, 8, 8, 4, 4, 4, 4, 4
+};*/
+
+int noteDurations[] = {
+  4, 4, 4, 4, 4, 4, 4, 2
 };
 
 void buzzer_fn() {
