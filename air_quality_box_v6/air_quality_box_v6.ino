@@ -4,19 +4,32 @@
 #include <Wire.h>
 #include "rgb_lcd.h"
 #include "pitches.h"
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+
+#define BME_SCK 13
+#define BME_MISO 12
+#define BME_MOSI 11
+#define BME_CS 10
+
+#define SEALEVELPRESSURE_HPA (1024.6)
+
+Adafruit_BME280 bme(BME_CS, BME_MOSI, BME_MISO, BME_SCK); // software SPI
 
 // pins
-const int pinBuzzer         = 5;
+const int pinBuzzer         = 4;
 const int pinLed_circle     = 6;
 const int pinLed_rgb_blue   = 9;
-const int pinLed_rgb_green  = 10;
-const int pinLed_rgb_red    = 11;
-const int pinLed_white      = 13;
+const int pinLed_rgb_green  = 5;
+const int pinLed_rgb_red    = 3;
+//const int pinLed_white      = 13;
 
 // timer
 int ledState = LOW;
 unsigned long previousMillis = 0;
-const long interval = 1000;           
+unsigned long previousMillis2 = 0;
+const long interval = 1000;   
+const long interval2 = 2000;         
 
 #define NUM_LEDS    12
 #define BRIGHTNESS  64
@@ -42,6 +55,11 @@ rgb_lcd lcd;
 int brightness = 0;
 int fadeAmount = 5;
 
+// variables barometre
+float temperature;
+float pressure;
+float altitude;
+float humidity;
 
 
 /*
@@ -55,8 +73,11 @@ void setup() {
   pinMode(pinLed_rgb_red, OUTPUT);
   //pinMode(pinLed_white, OUTPUT);
 
-  digitalWrite(pinLed_white, LOW);
-  analogWrite(pinLed_rgb_blue, 255);
+  //digitalWrite(pinLed_white, LOW);
+  //analogWrite(pinLed_rgb_blue, 255);
+
+  // barometer
+  bme.begin();
 
     lcd.begin(16, 2);
     // ouleur fond d'écran
@@ -67,7 +88,7 @@ void setup() {
     lcd.setCursor(0,0);
     lcd.print("Starting ...");
     // air qulity init
-    airqualitysensor.init(14);
+    //airqualitysensor.init(14);
   
     delay( 2000 ); // power-up safety delay
     FastLED.addLeds<LED_TYPE, pinLed_circle, COLOR_ORDER>(leds, NUM_LEDS).setCorrection( TypicalLEDStrip );
@@ -77,11 +98,11 @@ void setup() {
     currentBlending = LINEARBLEND;
 
     // air quality sensor
-    current_quality=airqualitysensor.slope();
+    //current_quality=airqualitysensor.slope();
 
   // air sensor
 
-  if (current_quality >= 0)// if a valid data returned.
+  /*if (current_quality >= 0)// if a valid data returned.
     {
         if (current_quality==0)
         {
@@ -124,10 +145,11 @@ void setup() {
         }
             
     }
+    */
 
     // end air sensor
     buzzer_fn();
-    analogWrite(pinLed_rgb_blue, 0);
+    //analogWrite(pinLed_rgb_blue, 0);
 
 }
 
@@ -138,57 +160,66 @@ void setup() {
 void loop()
 {
 
-  digitalWrite(pinLed_white, LOW);
-  // blink without delay
-  //unsigned long currentMillis = millis();
-
- /* if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
-
-    // if the LED is off turn it on and vice-versa:
-    if (ledState == LOW) {
-      ledState = HIGH;
-      setColor(255, 0, 0, pinLed_rgb_red, pinLed_rgb_green, pinLed_rgb_blue);  // red
-    } else {
-      ledState = LOW;
-      setColor(0, 0, 255, pinLed_rgb_red, pinLed_rgb_green, pinLed_rgb_blue);  // blue
-    }
-
-    // set the LED with the ledState of the variable:
-    //digitalWrite(ledPin, ledState);
-  }*/
-  // end blink without delay
-
-
     ChangePalettePeriodically();
     static uint8_t startIndex = 0;
     startIndex = startIndex + 1; 
     FillLEDsFromPaletteColors( startIndex);
     FastLED.show();
     FastLED.delay(1000 / UPDATES_PER_SECOND);
-  
 
-  // led
+    // 
+    temperature = bme.readTemperature();
+    pressure = bme.readPressure() / 100.0F;
+    altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
+    humidity = bme.readHumidity();
 
-  // change the brightness for next time through the loop:
-  brightness = brightness + fadeAmount;
+    unsigned long currentMillis = millis();
+    if (currentMillis - previousMillis >= interval) {
+          previousMillis = currentMillis;
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(bme.readTemperature());  
+          lcd.print(" deg"); 
+          lcd.setCursor(0,1);
+          lcd.print(bme.readPressure() / 100.0F);
+          lcd.print(" hPa");
+    }
 
-  // reverse the direction of the fading at the ends of the fade:
-  if (brightness <= 0 || brightness >= 255) {
-    fadeAmount = -fadeAmount;
-  }
-  // wait for 30 milliseconds to see the dimming effect
-  delay(30);
+/*
+    if (currentMillis - previousMillis2 >= interval2) {
+          previousMillis2 = currentMillis;
+          lcd.clear();
+          lcd.setCursor(0,0);
+          lcd.print(bme.readAltitude(SEALEVELPRESSURE_HPA));  
+          lcd.print(" m"); 
+          lcd.setCursor(0,1);
+          lcd.print(bme.readHumidity());
+          lcd.print(" %");
+    }
+*/
+/*
+    Serial.print("Temperature = ");
+    Serial.print(bme.readTemperature());
+    Serial.println(" *C");
 
-  // set the brightness of pin 9:
-  //analogWrite(pinLed_rgb_blue, brightness);
-  analogWrite(pinLed_rgb_green, 255);
+    Serial.print("Pression = ");
 
-  // end led
+    Serial.print(bme.readPressure() / 100.0F);
+    Serial.println(" hPa");
 
-  //digitalWrite(pinLed_white, HIGH);
- 
+    Serial.print("Altitude = ");
+    Serial.print(bme.readAltitude(SEALEVELPRESSURE_HPA));
+    Serial.println(" m");
+
+    Serial.print("Humidite = ");
+    Serial.print(bme.readHumidity());
+    Serial.println(" %");
+
+    Serial.println();
+
+    delay (1000);
+*/
+  analogWrite(pinLed_rgb_red, 255);
 }
 
 

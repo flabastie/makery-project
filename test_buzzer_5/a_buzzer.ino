@@ -4,7 +4,7 @@
 
 #include "a_pitches.h"
 
-const int pin_buzzer = 5;
+const int pin_buzzer = 4;
 
 // notes in the melody:
 /*int melody[] = {
@@ -12,7 +12,7 @@ const int pin_buzzer = 5;
 };*/
 
 int melody[] = {
-  NOTE_F3, NOTE_A3, NOTE_F1, NOTE_A3, NOTE_F3, NOTE_A3, NOTE_F3, NOTE_D4
+  NOTE_D3, NOTE_F3, NOTE_G3, NOTE_D3, NOTE_F3, NOTE_G3, NOTE_D3, NOTE_F3
 };
 
 // note durations: 4 = quarter note, 8 = eighth note, etc.:

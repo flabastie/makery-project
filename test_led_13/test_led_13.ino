@@ -5,7 +5,7 @@
   
 */
 
-const int pinLed = 13;
+const int pinLed = 8;
 
 void setup() {
   // initialize digital pin pinLed as an output.

@@ -14,8 +14,8 @@ void loop() {
 
   // sensor
   sensorValue = analogRead (A2);
-  //sensorValue = map (sensorValue, 0, 1023, 0, 255); 
+  sensorValue = map (sensorValue, 0, 1023, 0, 255); 
   Serial.println(sensorValue);
-  delay(500);
+  delay(50);
     
 }
