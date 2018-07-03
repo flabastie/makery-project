@@ -39,7 +39,7 @@ Timer t;
 // alert
 int alert_state = 0;
 int alert_air_state = 0;
-#define TEMPO_ALERT 20000
+#define TEMPO_AFTER_ALERT 20000
 
 #define NUM_LEDS 12
 #define BRIGHTNESS  64
